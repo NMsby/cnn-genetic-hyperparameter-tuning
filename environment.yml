@@ -1,0 +1,15 @@
+name: cnn-genetic
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+  - python=3.10
+  - pip=25.1.1
+  - tensorflow=2.19.0
+  - numpy=1.24.0
+  - matplotlib=3.10.3
+  - pandas=2.2.3
+  - scikit-learn=1.6.1
+  - jupyterlab=4.4.2
+  - pip:
+    - tensorflow-datasets==4.9.8
