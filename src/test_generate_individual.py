@@ -1,5 +1,3 @@
-# src/test_generate_individual.py
-
 import random
 import numpy as np
 import tensorflow as tf

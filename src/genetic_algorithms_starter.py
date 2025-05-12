@@ -300,7 +300,8 @@ def evaluate_fitness(
 def select_parents(
         population: List[Dict[str, Any]],
         fitness_scores: List[float],
-        num_parents: int
+        num_parents: int,
+        tournament_size: int = 3
 ) -> List[Dict[str, Any]]:
     """
     Select individuals to be parents for the next generation using tournament selection.
@@ -308,38 +309,35 @@ def select_parents(
     Tournament selection: randomly select k individuals and choose the best one.
     Repeat until we have num_parents parents.
 
-    Process:
-    1. For each parent needed:
-       a. Randomly select k individuals from the population
-       b. Compare their fitness scores
-       c. Select the individual with the highest fitness score
-    2. Return the selected parents
-
     Args:
         population (List[Dict[str, Any]]): List of individuals
         fitness_scores (List[float]): Fitness scores corresponding to each individual
         num_parents (int): Number of parents to select
+        tournament_size (int, optional): Number of individuals in each tournament.
+                                         Larger values increase selection pressure.
+                                         Defaults to 3.
 
     Returns:
         List[Dict[str, Any]]: Selected parents
 
-    TODO: Implement tournament selection or another selection strategy.
-          The implementation guide recommends tournament selection.
     """
-    # TODO: Student implementation
     parents = []
-    # Example of tournament selection:
-    tournament_size = 3  # You can adjust this parameter
 
+    # Continue selecting parents until we have enough
     for _ in range(num_parents):
-        # Randomly select tournament_size individuals
+        # Randomly select tournament_size individuals for this tournament
+        # If tournament_size is larger than population size, limit it
+        actual_tournament_size = min(tournament_size, len(population))
         tournament_indices = random.sample(range(len(population)), tournament_size)
-        # Get their fitness scores
+
+        # Get the fitness scores for the selected individuals
         tournament_fitness = [fitness_scores[i] for i in tournament_indices]
-        # Find the winner (highest fitness)
+
+        # Find the winner (the individual with the highest fitness in this tournament)
         winner_relative_idx = np.argmax(tournament_fitness)
         winner_idx = tournament_indices[winner_relative_idx]
-        # Add the winner to parents
+
+        # Add the winner to the parents list
         parents.append(population[winner_idx])
 
     return parents
