@@ -7,6 +7,7 @@ from io import StringIO
 import subprocess
 import logging
 import sys
+from contextlib import redirect_stdout
 
 # Import our model builder
 from genetic_algorithms_starter import build_model
@@ -17,6 +18,95 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger("VisualizeArchitecture")
+
+
+def create_architecture_diagram(model, filename="cnn_architecture_diagram"):
+    """
+    Create a simple diagram of model architecture using matplotlib.
+    This is an alternative when Graphviz is not available.
+
+    Args:
+        model: The Keras model
+        filename: Base filename for the output image
+    """
+    # Create a figure
+    fig, ax = plt.figure(figsize=(12, 8)), plt.gca()
+
+    # Define colors for different layer types
+    layer_colors = {
+        'Conv2D': '#FFA07A',  # Light Salmon
+        'MaxPooling2D': '#20B2AA',  # Light Sea Green
+        'AveragePooling2D': '#87CEFA',  # Light Sky Blue
+        'Dropout': '#FAFAD2',  # Light Goldenrod Yellow
+        'Flatten': '#9370DB',  # Medium Purple
+        'Dense': '#90EE90',  # Light Green
+    }
+
+    # Default color for other layer types
+    default_color = '#D3D3D3'  # Light Gray
+
+    # Define box dimensions
+    box_width = 0.8
+    box_height = 0.5
+    y_spacing = 1.2
+
+    # Track total layers for vertical positioning
+    total_layers = len(model.layers)
+
+    # Draw each layer
+    for i, layer in enumerate(model.layers):
+        # Get layer type and color
+        layer_type = layer.__class__.__name__
+        color = layer_colors.get(layer_type, default_color)
+
+        # Calculate position (centered horizontally, stacked vertically from top to bottom)
+        y_pos = total_layers - i - 1  # Reverse order for top-to-bottom flow
+
+        # Draw the layer box
+        rect = plt.Rectangle((0.5 - box_width / 2, y_pos * y_spacing),
+                             box_width, box_height,
+                             facecolor=color, edgecolor='black', alpha=0.7)
+        ax.add_patch(rect)
+
+        # Add layer name and type
+        plt.text(0.5, y_pos * y_spacing + box_height / 2,
+                 f"{layer.name}\n({layer_type})",
+                 horizontalalignment='center', verticalalignment='center',
+                 fontsize=10)
+
+        # Add parameter count
+        params = layer.count_params()
+        if params > 0:
+            plt.text(0.5 + box_width / 2 + 0.05, y_pos * y_spacing + box_height / 2,
+                     f"Params: {params:,}",
+                     horizontalalignment='left', verticalalignment='center',
+                     fontsize=8)
+
+        # Draw arrows between layers
+        if i < total_layers - 1:
+            plt.arrow(0.5, y_pos * y_spacing, 0, -0.7,
+                      head_width=0.05, head_length=0.1, fc='black', ec='black')
+
+    # Set plot limits
+    ax.set_xlim(0, 1)
+    ax.set_ylim(-1, total_layers * y_spacing)
+
+    # Remove axes
+    ax.axis('off')
+
+    # Add title
+    plt.title(f'Model Architecture: {model.name}')
+
+    # Add total parameters
+    plt.figtext(0.5, 0.01, f'Total Parameters: {model.count_params():,}',
+                horizontalalignment='center', fontsize=10)
+
+    # Save figure
+    plt.savefig(f"results/{filename}.png", dpi=150, bbox_inches='tight')
+    logger.info(f"Architecture diagram saved to results/{filename}.png")
+
+    # Close the figure to free memory
+    plt.close(fig)
 
 
 def visualize_architecture(individual, filename="cnn_architecture"):
@@ -38,7 +128,8 @@ def visualize_architecture(individual, filename="cnn_architecture"):
     # Print model summary to console
     model.summary()
 
-    # Check if graphviz is available for better visualization
+    # Try to use plot_model (requires Graphviz)
+    graphviz_works = False
     try:
         # Try to create a visualization of the model
         plot_model(
@@ -48,19 +139,21 @@ def visualize_architecture(individual, filename="cnn_architecture"):
             show_layer_names=True,
             expand_nested=True
         )
-        logger.info(f"Model visualization saved to results/{filename}.png")
+        logger.info(f"Graphviz model visualization saved to results/{filename}.png")
+        graphviz_works = True
     except Exception as e:
-        logger.warning(f"Could not create model visualization: {e}")
-        logger.warning("To enable visualization, install graphviz and pydot:")
+        logger.warning(f"Could not create Graphviz visualization: {e}")
+        logger.warning("To enable Graphviz visualization, install graphviz and pydot:")
         logger.warning("pip install pydot")
         logger.warning("And install Graphviz from https://graphviz.org/download/")
 
-    # Create a simpler text-based representation without Unicode characters
+    # Create our custom matplotlib visualization (as a fallback or additional visualization)
+    if not graphviz_works:
+        create_architecture_diagram(model, filename)
+
+    # Save model summary to a text file
     try:
         # Redirect model.summary() to a file with utf-8 encoding
-        # This is a safer approach than trying to manually create the summary
-        from contextlib import redirect_stdout
-
         with open(f"results/{filename}.txt", "w", encoding="utf-8") as f:
             with redirect_stdout(f):
                 model.summary(line_length=80, positions=[.33, .65, .8, 1.])
