@@ -536,40 +536,101 @@ def evolve_population(
     """
     Evolve the population to the next generation.
 
-    This is the main function that drives the genetic algorithm forward.
-    It combines selection, crossover, and mutation to create a new generation.
-
-    Process:
-    1. Select parents based on fitness
-    2. Create offspring through crossover
-    3. Apply mutation to maintain diversity
-    4. Form the new generation
-
-    Implementation considerations:
-    - Elitism: Keep the best individuals from the current generation
-    - Replacement strategy: How to combine parents and offspring
-    - Maintaining population size
+    This function combines selection, crossover, and mutation to create
+    a new generation of individuals based on the fitness of the current population.
 
     Args:
         population (List[Dict[str, Any]]): Current generation of individuals
         fitness_scores (List[float]): Fitness scores for current population
         population_size (int): Desired size of the new population
-        mutation_rate (float, optional): Probability of mutation. Defaults to 0.1.
+        mutation_rate (float, optional): Probability of mutation.
+                                         Default to 0.1.
 
     Returns:
         List[Dict[str, Any]]: New generation of individuals
-
-    TODO: Implement the population evolution process as described in the guide.
     """
-    # TODO: Student implementation
-    # Select parents
-    num_parents = population_size // 2
-    parents = select_parents(population, fitness_scores, num_parents)
-
-    # Create offspring through crossover and mutation
+    # Create a new empty generation
     next_generation = []
 
-    # Implement the logic to create the next generation using crossover and mutation
+    # Apply elitism: Keep the best individual(s)
+    elite_count = max(1, int(population_size * 0.1))            # 10% elitism
+    elite_indices = np.argsort(fitness_scores)[-elite_count:]   # Indices of top individuals
+
+    for idx in elite_indices:
+        next_generation.append(population[idx].copy())  # Use copy to avoid modifying the original
+
+    # Helper function to check if an individual is too similar to existing ones
+    def is_too_similar(individual, population, similarity_threshold=0.9):
+        for existing in population:
+            # Skip if different number of layers
+            if existing['conv_layers'] != individual['conv_layers']:
+                continue
+
+            # Count identical parameters
+            identical_params = 0
+            total_params = 0
+
+            # Check learning rate
+            if existing['learning_rate'] == individual['learning_rate']:
+                identical_params += 1
+            total_params += 1
+
+            # Check layer parameters
+            for i in range(individual['conv_layers']):
+                for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                    param_name = f'{param}_{i}'
+                    if existing[param_name] == individual[param_name]:
+                        identical_params += 1
+                    total_params += 1
+
+            # Calculate similarity ratio
+            similarity = identical_params / total_params
+            if similarity >= similarity_threshold:
+                return True
+
+        return False
+
+    # Select parents for producing offspring
+    parents = select_parents(population, fitness_scores, population_size)
+
+    # Create offspring through crossover and mutation until we reach population_size
+    max_attempts = population_size * 10  # Limit attempts to prevent infinite loops
+    attempts = 0
+
+    while len(next_generation) < population_size and attempts < max_attempts:
+        attempts += 1
+
+        # Select two parents
+        parent1, parent2 = random.sample(parents, 2)
+
+        # Create offspring through crossover
+        offspring1, offspring2 = crossover(parent1, parent2)
+
+        # Apply adaptive mutation based on similarity to parents
+        # Use higher mutation rate if offspring is too similar to parents
+        offspring1_mutation_rate = mutation_rate
+        if is_too_similar(offspring1, [parent1, parent2], 0.8):
+            offspring1_mutation_rate = min(mutation_rate * 2, 0.5)
+
+        offspring2_mutation_rate = mutation_rate
+        if is_too_similar(offspring2, [parent1, parent2], 0.8):
+            offspring2_mutation_rate = min(mutation_rate * 2, 0.5)
+
+        # Apply mutation
+        offspring1 = mutate(offspring1, offspring1_mutation_rate)
+        offspring2 = mutate(offspring2, offspring2_mutation_rate)
+
+        # Only add offspring if they're not too similar to existing population
+        if not is_too_similar(offspring1, next_generation) and len(next_generation) < population_size:
+            next_generation.append(offspring1)
+
+        if not is_too_similar(offspring2, next_generation) and len(next_generation) < population_size:
+            next_generation.append(offspring2)
+
+        # If we couldn't fill the population with diverse individuals,
+        # fill remaining slots with random individuals
+    while len(next_generation) < population_size:
+        next_generation.append(generate_individual())
 
     return next_generation
 
