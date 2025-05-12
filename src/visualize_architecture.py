@@ -55,36 +55,38 @@ def visualize_architecture(individual, filename="cnn_architecture"):
         logger.warning("pip install pydot")
         logger.warning("And install Graphviz from https://graphviz.org/download/")
 
-    # Create a simpler text-based representation for the file
-    # Use a custom print function to create a simpler representation without Unicode characters
-    layers_info = ["Model: " + model.name, "=" * 80, f"{'Layer (type)':40} {'Output Shape':25} {'Param #':10}",
-                   "=" * 80]
-
-    for layer in model.layers:
-        output_shape = str(layer.output_shape)
-        layers_info.append(
-            f"{layer.name + ' (' + layer.__class__.__name__ + ')':40} {output_shape:25} {layer.count_params():10}")
-
-    layers_info.append("=" * 80)
-    layers_info.append(f"Total params: {model.count_params():,}")
-    layers_info.append(f"Trainable params: {sum(tf.keras.backend.count_params(p) for p in model.trainable_weights):,}")
-    layers_info.append(
-        f"Non-trainable params: {sum(tf.keras.backend.count_params(p) for p in model.non_trainable_weights):,}")
-
-    # Write to file with UTF-8 encoding
+    # Create a simpler text-based representation without Unicode characters
     try:
+        # Redirect model.summary() to a file with utf-8 encoding
+        # This is a safer approach than trying to manually create the summary
+        from contextlib import redirect_stdout
+
         with open(f"results/{filename}.txt", "w", encoding="utf-8") as f:
-            f.write("\n".join(layers_info))
+            with redirect_stdout(f):
+                model.summary(line_length=80, positions=[.33, .65, .8, 1.])
+
         logger.info(f"Model summary saved to results/{filename}.txt")
     except Exception as e:
         logger.error(f"Error saving model summary to file: {e}")
-        # Fallback to ASCII-only version if UTF-8 fails
+
+        # Alternative approach - create a very simple summary
         try:
-            with open(f"results/{filename}_ascii.txt", "w", encoding="ascii", errors="replace") as f:
-                f.write("\n".join(layers_info))
-            logger.info(f"ASCII model summary saved to results/{filename}_ascii.txt")
+            with open(f"results/{filename}_simple.txt", "w", encoding="ascii", errors="replace") as f:
+                f.write(f"Model: {model.name}\n\n")
+                f.write("Layer Information:\n")
+                f.write("-" * 80 + "\n")
+
+                for i, layer in enumerate(model.layers):
+                    f.write(f"Layer {i}: {layer.name} ({layer.__class__.__name__})\n")
+                    f.write(f"  Parameters: {layer.count_params():,}\n")
+                    f.write("\n")
+
+                f.write("-" * 80 + "\n")
+                f.write(f"Total parameters: {model.count_params():,}\n")
+
+            logger.info(f"Simple model summary saved to results/{filename}_simple.txt")
         except Exception as e2:
-            logger.error(f"Error saving ASCII model summary: {e2}")
+            logger.error(f"Error saving simple model summary: {e2}")
 
     return model
 
