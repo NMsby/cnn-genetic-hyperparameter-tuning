@@ -68,7 +68,7 @@ def load_data():
     # Load CIFAR-10 dataset
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
-    # Normalize pixel values to be between 0 and 1
+    # Normalize pixel values to be between 0 and 1,
     # This helps with training stability and convergence
     x_train = x_train.astype('float32') / 255.0
     x_test = x_test.astype('float32') / 255.0
@@ -472,7 +472,7 @@ def print_best_individual(individual: Dict[str, Any], fitness: float) -> None:
     """
     Print the hyperparameters and fitness of the best individual.
 
-    This function provides a human-readable representation of a CNN architecture
+    This function provides a human-readable representation of CNN architecture
     and its performance.
 
     Args:
@@ -571,7 +571,7 @@ def run_genetic_algorithm(
             fitness = evaluate_fitness(individual, x_train, y_train, x_val, y_val, epochs=epochs_per_eval)
             fitness_scores.append(fitness)
 
-        # Find best individual in this generation
+        # Find the best individual in this generation
         gen_best_idx = np.argmax(fitness_scores)
         gen_best_fitness = fitness_scores[gen_best_idx]
         gen_best_individual = population[gen_best_idx]
@@ -634,7 +634,7 @@ if __name__ == "__main__":
         verbose=1
     )
 
-    # Evaluate on test set
+    # Evaluate on the test set
     test_loss, test_accuracy = best_model.evaluate(x_test, y_test, verbose=1)
     print(f"Final test accuracy: {test_accuracy:.4f}")
 
