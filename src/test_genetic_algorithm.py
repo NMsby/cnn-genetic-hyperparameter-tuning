@@ -390,9 +390,20 @@ class TestHyperparameterSearchSpace(unittest.TestCase):
                 layer_param_values['pool_type'].add(individual[f'pool_type_{i}'])
                 layer_param_values['dropout'].add(individual[f'dropout_{i}'])
 
+        # Mapping from parameter names to search space keys
+        param_to_key = {
+            'conv_layers': 'conv_layers',
+            'learning_rate': 'learning_rates',
+            'filters': 'filters',
+            'kernel_size': 'kernel_sizes',
+            'activation': 'activation_functions',
+            'pool_type': 'pool_types',
+            'dropout': 'dropout_rates'
+        }
+
         # Check if all values in the search space appear in the population
         for param, values in hyperparameter_values.items():
-            search_space_key = param + 's' if param != 'conv_layers' else param
+            search_space_key = param_to_key[param]
             self.assertTrue(values.issubset(set(HYPERPARAMETER_SPACE[search_space_key])))
 
             # With a large population, we should see most values
@@ -402,8 +413,7 @@ class TestHyperparameterSearchSpace(unittest.TestCase):
 
         # Check layer parameter coverage
         for param, values in layer_param_values.items():
-            search_space_key = param + 's' if param not in ['activation', 'dropout'] else \
-                'activation_functions' if param == 'activation' else 'dropout_rates'
+            search_space_key = param_to_key[param]
             self.assertTrue(values.issubset(set(HYPERPARAMETER_SPACE[search_space_key])))
 
             coverage_pct = len(values) / len(HYPERPARAMETER_SPACE[search_space_key]) * 100
