@@ -442,8 +442,9 @@ def mutate(
     """
     Mutate an individual by randomly changing some of its hyperparameters.
 
-    Some hyperparameters have more impact than others, so we might want to
-    mutate them with different probabilities.
+    The mutation_rate determines the probability of each hyperparameter being mutated.
+    When a hyperparameter is selected for mutation, it is replaced with a random value
+    from the corresponding search space.
 
     Args:
         individual (Dict[str, Any]): The individual to mutate
@@ -459,28 +460,32 @@ def mutate(
     # Define mutation probability scaling factors
     # These are multipliers applied to the base mutation_rate
     scaling_factors = {
-        'conv_layers': 0.5,  # Less likely to change architecture
-        'learning_rate': 1.5,  # More likely to tune learning rate
-        'filters': 1.2,  # Important but not drastic
-        'kernel_size': 0.8,  # Less impact than filters
-        'activation': 1.0,  # Normal importance
-        'pool_type': 0.7,  # Less impact
-        'dropout': 1.3  # Important for regularization
+        'conv_layers': 0.5,     # Less likely to change architecture
+        'learning_rate': 1.5,   # More likely to tune learning rate
+        'filters': 1.2,         # Important but not drastic
+        'kernel_size': 0.8,     # Less impact than filters
+        'activation': 1.0,      # Normal importance
+        'pool_type': 0.7,       # Less impact
+        'dropout': 1.3          # Important for regularization
     }
 
     # Possibly mutate number of convolutional layers (with scaled probability)
     if random.random() < mutation_rate * scaling_factors['conv_layers']:
-        # Same implementation as before...
+        # Get a new random number of layers from the search space
         new_conv_layers = random.choice(HYPERPARAMETER_SPACE['conv_layers'])
 
-        # Handle decreasing/increasing layers as before...
+        # Handle the case where we're decreasing the number of layers
         if new_conv_layers < mutated['conv_layers']:
+            # Remove parameters for the layers we're removing
             for i in range(new_conv_layers, mutated['conv_layers']):
                 for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
                     key = f'{param}_{i}'
                     if key in mutated:
                         del mutated[key]
+
+        # Handle the case where we're increasing the number of layers
         elif new_conv_layers > mutated['conv_layers']:
+            # Add parameters for the new layers
             for i in range(mutated['conv_layers'], new_conv_layers):
                 mutated[f'filters_{i}'] = random.choice(HYPERPARAMETER_SPACE['filters'])
                 mutated[f'kernel_size_{i}'] = random.choice(HYPERPARAMETER_SPACE['kernel_sizes'])
@@ -488,6 +493,7 @@ def mutate(
                 mutated[f'pool_type_{i}'] = random.choice(HYPERPARAMETER_SPACE['pool_types'])
                 mutated[f'dropout_{i}'] = random.choice(HYPERPARAMETER_SPACE['dropout_rates'])
 
+        # Update the number of layers
         mutated['conv_layers'] = new_conv_layers
 
     # Possibly mutate learning rate (with scaled probability)
@@ -497,16 +503,26 @@ def mutate(
     # Possibly mutate layer parameters
     for i in range(mutated['conv_layers']):
         # Apply scaled mutation rates for each parameter type
-        for param, scale in [
-            ('filters', scaling_factors['filters']),
-            ('kernel_size', scaling_factors['kernel_size']),
-            ('activation', scaling_factors['activation']),
-            ('pool_type', scaling_factors['pool_type']),
-            ('dropout', scaling_factors['dropout'])
-        ]:
-            if random.random() < mutation_rate * scale:
-                param_space_key = param + 's' if param != 'activation' else 'activation_functions'
-                mutated[f'{param}_{i}'] = random.choice(HYPERPARAMETER_SPACE[param_space_key])
+
+        # Mutate filters for this layer
+        if random.random() < mutation_rate * scaling_factors['filters']:
+            mutated[f'filters_{i}'] = random.choice(HYPERPARAMETER_SPACE['filters'])
+
+        # Mutate kernel size for this layer
+        if random.random() < mutation_rate * scaling_factors['kernel_size']:
+            mutated[f'kernel_size_{i}'] = random.choice(HYPERPARAMETER_SPACE['kernel_sizes'])
+
+        # Mutate activation function for this layer
+        if random.random() < mutation_rate * scaling_factors['activation']:
+            mutated[f'activation_{i}'] = random.choice(HYPERPARAMETER_SPACE['activation_functions'])
+
+        # Mutate pool type for this layer
+        if random.random() < mutation_rate * scaling_factors['pool_type']:
+            mutated[f'pool_type_{i}'] = random.choice(HYPERPARAMETER_SPACE['pool_types'])
+
+        # Mutate dropout rate for this layer
+        if random.random() < mutation_rate * scaling_factors['dropout']:
+            mutated[f'dropout_{i}'] = random.choice(HYPERPARAMETER_SPACE['dropout_rates'])
 
     return mutated
 
