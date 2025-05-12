@@ -134,12 +134,12 @@ def visualize_architecture(individual, filename="cnn_architecture"):
         # Try to create a visualization of the model
         plot_model(
             model,
-            to_file=f"results/{filename}.png",
+            to_file=f"results/{filename}_graphviz.png",
             show_shapes=True,
             show_layer_names=True,
             expand_nested=True
         )
-        logger.info(f"Graphviz model visualization saved to results/{filename}.png")
+        logger.info(f"Graphviz model visualization saved to results/{filename}_graphviz.png")
         graphviz_works = True
     except Exception as e:
         logger.warning(f"Could not create Graphviz visualization: {e}")
