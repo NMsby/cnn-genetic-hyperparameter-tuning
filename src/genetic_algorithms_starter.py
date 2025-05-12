@@ -194,36 +194,33 @@ def generate_individual() -> Dict[str, Any]:
     This function randomly selects values for all hyperparameters from the
     defined search space (HYPERPARAMETER_SPACE).
 
-    Implementation Strategy:
-    1. Randomly select the number of convolutional layers
-    2. Randomly select the learning rate
-    3. For each convolutional layer, randomly select:
-       - Number of filters
-       - Kernel size
-       - Activation function
-       - Pooling type
-       - Dropout rate
-
     Returns:
         Dict[str, Any]: Dictionary containing randomly selected hyperparameters
-
-    TODO: Complete the implementation to generate a random individual with all
-          necessary hyperparameters for a valid CNN architecture.
     """
-    # TODO: Student implementation
     # Create a dictionary with all necessary hyperparameters
     # Example structure:
     individual = {
+        # Randomly select the number of convolutional layers
         'conv_layers': random.choice(HYPERPARAMETER_SPACE['conv_layers']),
+        # Randomly select the learning rate
         'learning_rate': random.choice(HYPERPARAMETER_SPACE['learning_rates'])
     }
 
-    # For each conv layer, add specific hyperparameters
+    # For each convolutional layer, generate layer-specific hyperparameters
     for i in range(individual['conv_layers']):
+        # Number of filters in this layer
         individual[f'filters_{i}'] = random.choice(HYPERPARAMETER_SPACE['filters'])
+
+        # Kernel size for this layer
         individual[f'kernel_size_{i}'] = random.choice(HYPERPARAMETER_SPACE['kernel_sizes'])
+
+        # Activation function for this layer
         individual[f'activation_{i}'] = random.choice(HYPERPARAMETER_SPACE['activation_functions'])
+
+        # Pooling type for this layer
         individual[f'pool_type_{i}'] = random.choice(HYPERPARAMETER_SPACE['pool_types'])
+
+        # Dropout rate for this layer
         individual[f'dropout_{i}'] = random.choice(HYPERPARAMETER_SPACE['dropout_rates'])
 
     return individual
