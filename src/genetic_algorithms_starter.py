@@ -354,13 +354,6 @@ def crossover(
     CNN architecture configurations. The goal is to potentially create better
     architectures by combining good traits from both parents.
 
-    Potential implementation strategies:
-    1. Single-point crossover: Swap hyperparameters after a random point
-    2. Uniform crossover: For each hyperparameter, randomly decide which parent to take from
-    3. Parameter-specific crossover: Use different strategies for different types of parameters
-
-    Challenge: Handling parents with different numbers of layers
-
     Args:
         parent1 (Dict[str, Any]): First parent's hyperparameters
         parent2 (Dict[str, Any]): Second parent's hyperparameters
@@ -368,15 +361,76 @@ def crossover(
     Returns:
         Tuple[Dict[str, Any], Dict[str, Any]]: Two new offspring
 
-    TODO: Implement a crossover strategy as described in the implementation guide.
     """
-    # TODO: Student implementation
-    # Create copies of parents to avoid modifying them
+    # Create copies of parents to avoid modifying the originals
     offspring1 = parent1.copy()
     offspring2 = parent2.copy()
 
-    # Implement crossover logic here
-    # Example: simple one-point crossover for some parameters
+    # Get min and max layer counts from parents
+    min_layers = min(parent1['conv_layers'], parent2['conv_layers'])
+    max_layers = max(parent1['conv_layers'], parent2['conv_layers'])
+
+    # Set both offspring to have the same number of layers initially
+    offspring1['conv_layers'] = min_layers
+    offspring2['conv_layers'] = min_layers
+
+    # Decide layer counts for offspring
+    # With 70% probability, use the layer count of one of the parents
+    if random.random() < 0.7:
+        if random.random() < 0.5:
+            offspring1['conv_layers'] = parent1['conv_layers']
+            offspring2['conv_layers'] = parent2['conv_layers']
+        else:
+            offspring1['conv_layers'] = parent2['conv_layers']
+            offspring2['conv_layers'] = parent1['conv_layers']
+    else:
+        # With 30% probability, use a random value between min and max
+        if min_layers != max_layers:
+            offspring1['conv_layers'] = random.randint(min_layers, max_layers)
+            offspring2['conv_layers'] = random.randint(min_layers, max_layers)
+
+    # Possibly swap learning rates with 50% probability
+    if random.random() < 0.5:
+        offspring1['learning_rate'], offspring2['learning_rate'] = \
+            offspring2['learning_rate'], offspring1['learning_rate']
+
+    # For each possible layer up to the max of both offspring, handle parameter inheritance
+    max_offspring_layers = max(offspring1['conv_layers'], offspring2['conv_layers'])
+
+    for i in range(max_offspring_layers):
+        # Determine which parents have this layer
+        parent1_has_layer = i < parent1['conv_layers']
+        parent2_has_layer = i < parent2['conv_layers']
+
+        # For common layers (both parents have this layer), perform crossover
+        if parent1_has_layer and parent2_has_layer:
+            for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                param_name = f'{param}_{i}'
+
+                # Randomly swap with 50% probability
+                if random.random() < 0.5:
+                    offspring1[param_name], offspring2[param_name] = \
+                        offspring2[param_name], offspring1[param_name]
+
+        # For layers only in parent1, inherit those parameters if needed
+        elif parent1_has_layer:
+            if i < offspring1['conv_layers']:  # offspring1 needs this layer
+                for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                    offspring1[f'{param}_{i}'] = parent1[f'{param}_{i}']
+
+            if i < offspring2['conv_layers']:  # offspring2 needs this layer
+                for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                    offspring2[f'{param}_{i}'] = parent1[f'{param}_{i}']
+
+        # For layers only in parent2, inherit those parameters if needed
+        elif parent2_has_layer:
+            if i < offspring1['conv_layers']:  # offspring1 needs this layer
+                for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                    offspring1[f'{param}_{i}'] = parent2[f'{param}_{i}']
+
+            if i < offspring2['conv_layers']:  # offspring2 needs this layer
+                for param in ['filters', 'kernel_size', 'activation', 'pool_type', 'dropout']:
+                    offspring2[f'{param}_{i}'] = parent2[f'{param}_{i}']
 
     return offspring1, offspring2
 
