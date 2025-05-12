@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 from io import StringIO
 import subprocess
 import logging
+import sys
 
 # Import our model builder
 from genetic_algorithms_starter import build_model
@@ -34,7 +35,7 @@ def visualize_architecture(individual, filename="cnn_architecture"):
     # Build the model
     model = build_model(individual)
 
-    # Print model summary
+    # Print model summary to console
     model.summary()
 
     # Check if graphviz is available for better visualization
@@ -54,12 +55,36 @@ def visualize_architecture(individual, filename="cnn_architecture"):
         logger.warning("pip install pydot")
         logger.warning("And install Graphviz from https://graphviz.org/download/")
 
-    # Create a text-based representation as backup
-    summary_io = StringIO()
-    model.summary(print_fn=lambda x: summary_io.write(x + '\n'))
-    with open(f"results/{filename}.txt", "w") as f:
-        f.write(summary_io.getvalue())
-    logger.info(f"Model summary saved to results/{filename}.txt")
+    # Create a simpler text-based representation for the file
+    # Use a custom print function to create a simpler representation without Unicode characters
+    layers_info = ["Model: " + model.name, "=" * 80, f"{'Layer (type)':40} {'Output Shape':25} {'Param #':10}",
+                   "=" * 80]
+
+    for layer in model.layers:
+        output_shape = str(layer.output_shape)
+        layers_info.append(
+            f"{layer.name + ' (' + layer.__class__.__name__ + ')':40} {output_shape:25} {layer.count_params():10}")
+
+    layers_info.append("=" * 80)
+    layers_info.append(f"Total params: {model.count_params():,}")
+    layers_info.append(f"Trainable params: {sum(tf.keras.backend.count_params(p) for p in model.trainable_weights):,}")
+    layers_info.append(
+        f"Non-trainable params: {sum(tf.keras.backend.count_params(p) for p in model.non_trainable_weights):,}")
+
+    # Write to file with UTF-8 encoding
+    try:
+        with open(f"results/{filename}.txt", "w", encoding="utf-8") as f:
+            f.write("\n".join(layers_info))
+        logger.info(f"Model summary saved to results/{filename}.txt")
+    except Exception as e:
+        logger.error(f"Error saving model summary to file: {e}")
+        # Fallback to ASCII-only version if UTF-8 fails
+        try:
+            with open(f"results/{filename}_ascii.txt", "w", encoding="ascii", errors="replace") as f:
+                f.write("\n".join(layers_info))
+            logger.info(f"ASCII model summary saved to results/{filename}_ascii.txt")
+        except Exception as e2:
+            logger.error(f"Error saving ASCII model summary: {e2}")
 
     return model
 
