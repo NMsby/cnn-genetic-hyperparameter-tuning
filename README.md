@@ -276,15 +276,15 @@ best_individual, best_fitness, fitness_history = run_optimized(
 
 The genetic algorithm searches through the following hyperparameter space:
 
-| Hyperparameter | Values |
-|----------------|--------|
-| Number of convolutional layers | 1, 2, 3, 4, 5 |
-| Number of filters per layer | 16, 32, 64, 128, 256 |
-| Kernel sizes | 3, 5, 7 |
-| Pooling types | max, avg, none |
-| Learning rates | 0.1, 0.01, 0.001, 0.0001 |
-| Activation functions | relu, elu, leaky_relu |
-| Dropout rates | 0.0, 0.25, 0.5 |
+| Hyperparameter                 | Values                   |
+|--------------------------------|--------------------------|
+| Number of convolutional layers | 1, 2, 3, 4, 5            |
+| Number of filters per layer    | 16, 32, 64, 128, 256     |
+| Kernel sizes                   | 3, 5, 7                  |
+| Pooling types                  | max, avg, none           |
+| Learning rates                 | 0.1, 0.01, 0.001, 0.0001 |
+| Activation functions           | relu, elu, leaky_relu    |
+| Dropout rates                  | 0.0, 0.25, 0.5           |
 
 ## 🧬 Genetic Algorithm Components
 
@@ -322,15 +322,15 @@ Each individual's fitness is determined by:
 
 ## 📊 Experimental Results
 
-Our genetic algorithm consistently outperforms both random search and grid search, finding CNN architectures with higher validation accuracy while evaluating the same number of models.
+The genetic algorithm consistently outperforms both random search and grid search, finding CNN architectures with higher validation accuracy while evaluating the same number of models.
 
 ### Performance Comparison
 
-| Method | Best Validation Accuracy | Evaluations | Time per Evaluation (s) |
-|--------|--------------------------|------------|-------------------------|
-| Genetic Algorithm | 0.72 | 40 | 18.5 |
-| Random Search | 0.67 | 40 | 17.8 |
-| Grid Search | 0.65 | 40 | 17.9 |
+| Method            | Best Validation Accuracy | Evaluations | Time per Evaluation (s) |
+|-------------------|--------------------------|-------------|-------------------------|
+| Genetic Algorithm | 0.72                     | 40          | 18.5                    |
+| Random Search     | 0.67                     | 40          | 17.8                    |
+| Grid Search       | 0.65                     | 40          | 17.9                    |
 
 ### Best CNN Architecture
 
@@ -359,11 +359,11 @@ These optimizations result in significant speedup compared to the original imple
 
 ## 🔬 Ablation Studies
 
-We conducted ablation studies to understand the impact of different components and parameters:
+I conducted ablation studies to understand the impact of different components and parameters:
 
 ### Selection Strategies
 
-Tournament selection performed best, followed by rank selection and roulette wheel selection.
+Tournament selection performed best, followed by rank selection and roulette-wheel selection.
 
 ### Crossover Strategies
 
@@ -375,8 +375,8 @@ Adaptive mutation performed best, followed by Gaussian mutation and standard mut
 
 ### Other Parameters
 
-- **Population Size**: Larger populations (15-20) found better solutions but required more computation
-- **Mutation Rate**: Optimal rates were in the 0.1-0.2 range
+- **Population Size**: Larger populations (15–20) found better solutions but required more computation
+- **Mutation Rate**: Optimal rates were in the 0.1–0.2 range
 - **Tournament Size**: A tournament size of 3 offered the best balance of selection pressure and diversity
 
 ## 🔍 Visualization
