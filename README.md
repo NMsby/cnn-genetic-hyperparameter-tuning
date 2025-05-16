@@ -112,7 +112,7 @@ cnn-genetic-hyperparameter-tuning/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cnn-genetic-hyperparameter-tuning.git
+git clone https://github.com/NMsby/cnn-genetic-hyperparameter-tuning.git
 cd cnn-genetic-hyperparameter-tuning
 
 # Create and activate the conda environment
@@ -127,7 +127,7 @@ pip install -e .
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/cnn-genetic-hyperparameter-tuning.git
+git clone https://github.com/NMsby/cnn-genetic-hyperparameter-tuning.git
 cd cnn-genetic-hyperparameter-tuning
 
 # Create and activate virtual environment
@@ -145,7 +145,7 @@ pip install -e .
 
 For Unix/Linux/Mac:
 ```bash
-git clone https://github.com/yourusername/cnn-genetic-hyperparameter-tuning.git
+git clone https://github.com/NMsby/cnn-genetic-hyperparameter-tuning.git
 cd cnn-genetic-hyperparameter-tuning
 chmod +x setup.sh
 ./setup.sh
@@ -153,7 +153,7 @@ chmod +x setup.sh
 
 For Windows:
 ```bash
-git clone https://github.com/yourusername/cnn-genetic-hyperparameter-tuning.git
+git clone https://github.com/NMsby/cnn-genetic-hyperparameter-tuning.git
 cd cnn-genetic-hyperparameter-tuning
 setup.bat
 ```
