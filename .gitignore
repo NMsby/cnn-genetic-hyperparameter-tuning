@@ -52,3 +52,9 @@ Thumbs.db
 # Project specific
 results/models/
 results/figures/
+results/ablation/
+results/baseline/
+
+# Log files
+logs/*
+!logs/.gitkeep

@@ -2,22 +2,18 @@ import os
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 from tensorflow.keras.models import Model
 import seaborn as sns
 import json
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Dict, Any, List, Optional
 import logging
-import itertools
 import pandas as pd
 from sklearn.manifold import TSNE
-from sklearn.decomposition import PCA
 
 # Import the necessary functions from our module
 from genetic_algorithms_starter import (
     build_model,
     load_data,
-    evaluate_fitness,
     print_best_individual
 )
 
@@ -753,7 +749,7 @@ def run_visualization_suite():
                 grid_results = json.load(f)
 
             # Create comparison plots
-            from baseline_methods import plot_comparison_results
+            from src import plot_comparison_results
             plot_comparison_results(
                 ga_results,
                 random_results,
